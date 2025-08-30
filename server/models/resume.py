@@ -1,7 +1,7 @@
 from sqlalchemy import Column, Integer, String, DateTime, Text, ForeignKey, JSON
 from sqlalchemy.sql import func
 from datetime import datetime
-from app import db
+from models import db
 
 class Resume(db.Model):
     __tablename__ = 'resumes'

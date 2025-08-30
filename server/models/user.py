@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 import bcrypt
 import jwt
 import os
-from app import db
+from models import db
 
 class User(db.Model):
     __tablename__ = 'users'

@@ -2,9 +2,9 @@ from flask import Blueprint, request, jsonify, g
 from models.user import User
 from middleware.auth import authenticate_token
 from datetime import datetime
-from app import db
 
 auth_bp = Blueprint('auth', __name__)
+
 
 @auth_bp.route('/register', methods=['POST'])
 def register():
@@ -23,7 +23,7 @@ def register():
             return jsonify({'error': 'Password must be at least 6 characters long'}), 400
         
         # Check if user already exists
-        existing_user = User.query.filter_by(email=email.lower()).first()
+        existing_user = User.objects(email=email.lower()).first()
         if existing_user:
             return jsonify({'error': 'User with this email already exists'}), 400
         
@@ -33,8 +33,7 @@ def register():
             email=email.lower(),
             password=password
         )
-        db.session.add(user)
-        db.session.commit()
+        user.save()
         
         # Generate JWT token
         token = user.generate_token()
@@ -47,7 +46,6 @@ def register():
         }), 201
         
     except Exception as e:
-        db.session.rollback()
         print(f'Registration error: {e}')
         return jsonify({'error': 'Error registering user'}), 500
 
@@ -64,7 +62,7 @@ def login():
             return jsonify({'error': 'Email and password are required'}), 400
         
         # Find user
-        user = User.query.filter_by(email=email.lower()).first()
+        user = User.objects(email=email.lower()).first()
         if not user:
             return jsonify({'error': 'Invalid credentials'}), 401
         
@@ -78,7 +76,7 @@ def login():
         
         # Update last login
         user.last_login = datetime.utcnow()
-        db.session.commit()
+        user.save()
         
         # Generate JWT token
         token = user.generate_token()
@@ -91,7 +89,6 @@ def login():
         })
         
     except Exception as e:
-        db.session.rollback()
         print(f'Login error: {e}')
         return jsonify({'error': 'Error during login'}), 500
 
@@ -100,7 +97,7 @@ def login():
 def get_profile():
     """Get user profile"""
     try:
-        user = User.query.get(g.user['id'])
+        user = User.objects(id=g.user['id']).first()
         
         if not user:
             return jsonify({'error': 'User not found'}), 404
@@ -128,21 +125,18 @@ def update_profile():
             return jsonify({'error': 'Name and email are required'}), 400
         
         # Check if email is already taken by another user
-        existing_user = User.query.filter(
-            User.email == email.lower(),
-            User.id != g.user['id']
-        ).first()
+        existing_user = User.objects(email=email.lower(), id__ne=g.user['id']).first()
         if existing_user:
             return jsonify({'error': 'Email is already taken'}), 400
         
         # Update user
-        user = User.query.get(g.user['id'])
+        user = User.objects(id=g.user['id']).first()
         if not user:
             return jsonify({'error': 'User not found'}), 404
         
         user.name = name
         user.email = email.lower()
-        db.session.commit()
+        user.save()
         
         return jsonify({
             'success': True,
@@ -151,7 +145,6 @@ def update_profile():
         })
         
     except Exception as e:
-        db.session.rollback()
         print(f'Update profile error: {e}')
         return jsonify({'error': 'Error updating profile'}), 500
 
@@ -172,7 +165,7 @@ def change_password():
             return jsonify({'error': 'New password must be at least 6 characters long'}), 400
         
         # Get user
-        user = User.query.get(g.user['id'])
+        user = User.objects(id=g.user['id']).first()
         if not user:
             return jsonify({'error': 'User not found'}), 404
         
@@ -181,8 +174,8 @@ def change_password():
             return jsonify({'error': 'Current password is incorrect'}), 400
         
         # Update password
-        user.set_password(new_password)
-        db.session.commit()
+        user.password = new_password
+        user.save()
         
         return jsonify({
             'success': True,
@@ -190,7 +183,6 @@ def change_password():
         })
         
     except Exception as e:
-        db.session.rollback()
         print(f'Change password error: {e}')
         return jsonify({'error': 'Error changing password'}), 500
 
@@ -199,7 +191,7 @@ def change_password():
 def verify_token():
     """Verify JWT token"""
     try:
-        user = User.query.get(g.user['id'])
+        user = User.objects(id=g.user['id']).first()
         
         if not user:
             return jsonify({'error': 'User not found'}), 404

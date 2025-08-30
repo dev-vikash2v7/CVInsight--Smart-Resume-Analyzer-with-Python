@@ -3,13 +3,18 @@ from flask_cors import CORS
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from flask_compress import Compress
-from flask_sqlalchemy import SQLAlchemy
+from models import db
 from datetime import datetime
 import os
-from dotenv import load_dotenv
 
-# Load environment variables
+from dotenv import load_dotenv
 load_dotenv()
+
+from routes.auth_routes import auth_bp
+from routes.resume_routes import resume_bp
+from routes.analysis_routes import analysis_bp
+from routes.admin_routes import admin_bp
+
 
 # Initialize Flask app
 app = Flask(__name__)
@@ -20,7 +25,7 @@ app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL', 'sqlite:///res
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 # Initialize extensions
-db = SQLAlchemy(app)
+db.init_app(app)
 CORS(app, origins=[os.getenv('CLIENT_URL', 'http://localhost:3000')], supports_credentials=True)
 Compress(app)
 
@@ -31,19 +36,20 @@ limiter = Limiter(
     default_limits=["100 per 15 minutes"]
 )
 
-# Import routes after app initialization
-from routes.auth_routes import auth_bp
-from routes.resume_routes import resume_bp
-from routes.analysis_routes import analysis_bp
-from routes.admin_routes import admin_bp
-
-# Register blueprints
 app.register_blueprint(auth_bp, url_prefix='/api/auth')
 app.register_blueprint(resume_bp, url_prefix='/api/resume')
 app.register_blueprint(analysis_bp, url_prefix='/api/analysis')
 app.register_blueprint(admin_bp, url_prefix='/api/admin')
 
 # Health check endpoint
+@app.route('/')
+def init():
+    return jsonify({
+        'status': 'OK',
+        'message': 'CVInsight API is running',
+        'timestamp': datetime.utcnow().isoformat()
+    })
+
 @app.route('/api/health')
 def health_check():
     return jsonify({
