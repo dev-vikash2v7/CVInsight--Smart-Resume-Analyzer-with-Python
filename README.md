@@ -1,4 +1,4 @@
-# Smart AI Resume Analyzer - MERN Stack
+# CVInsight - Smart AI Resume Analyzer 
 
 A modern, AI-powered resume analysis and building platform built with  Python Full stack tools(Python , Flask , React , SQL).
 
@@ -43,6 +43,8 @@ A modern, AI-powered resume analysis and building platform built with  Python Fu
 
 2. **Create a virtual environment**
    ```bash
+
+
    python -m venv venv
    
    # On Windows
@@ -54,6 +56,7 @@ A modern, AI-powered resume analysis and building platform built with  Python Fu
 
 3. **Install dependencies**
    ```bash
+   cd backend
    pip install -r requirements.txt
    ```
 
@@ -63,38 +66,22 @@ A modern, AI-powered resume analysis and building platform built with  Python Fu
    # Server Configuration
    PORT=5000
    FLASK_ENV=development
-   
-   # MongoDB Configuration
-   MONGODB_URI=mongodb://localhost:27017/resume-analyzer
-   
+  
    # JWT Configuration
    JWT_SECRET=your-super-secret-jwt-key-change-this-in-production
    
    # Client URL (for CORS)
-   CLIENT_URL=http://localhost:3000
+   CLIENT_URL=client_url
    
    # AI API Keys
    GOOGLE_API_KEY=your-google-gemini-api-key
    
-   # Optional: OpenAI API Key
-   OPENAI_API_KEY=your-openai-api-key
-   
-   # File Upload Configuration
-   MAX_FILE_SIZE=10485760
-   UPLOAD_PATH=uploads/
-   
-   # Rate Limiting
-   RATE_LIMIT_WINDOW_MS=900000
-   RATE_LIMIT_MAX_REQUESTS=100
+
    ```
-
-5. **Set up MongoDB**
-   - Install MongoDB locally or use MongoDB Atlas
-   - Ensure MongoDB is running on the configured URI
-
-6. **Run the application**
+5. **Run the application**
    ```bash
    python app.py
    ```
+
 
 The server will start on `http://localhost:5000`
